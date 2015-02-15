@@ -44,11 +44,18 @@ class RPCServer(ZmqREPConnection):
 
             rpc_response_str = (_SerializeWithLength(response) +
                                 _SerializeWithLength(app_response))
+            self.reply(messageId, rpc_response_str)
         except RPCError, e:
             response = RPCResponse()
-            response.status = RPCResponse.RPC_ERROR;
+            response.status = RPCResponse.APP_ERROR
             response.status_info = e.message
             rpc_response_str = _SerializeWithLength(response)
-
-        self.reply(messageId, rpc_response_str)
+            self.reply(messageId, rpc_response_str)
+        except Exception, e:
+            response = RPCResponse()
+            response.status = RPCResponse.RPC_ERROR
+            response.status_info = "Internal error when handling request"
+            rpc_response_str = _SerializeWithLength(response)
+            self.reply(messageId, rpc_response_str)
+            raise
 
